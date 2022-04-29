@@ -1,8 +1,3 @@
-/*
-    Hassan Mahmoud Hassan
-    20180088
-    Group S2
- */
 import java.util.Scanner;
 
 public class Main {
@@ -14,7 +9,7 @@ public class Main {
         float minimumConfidence= input.nextFloat();
         CsvReader reader = new CsvReader();
         AprioriAlgorithm aprioriAlgorithm = new AprioriAlgorithm();
-        String fileName = "C:\\Users\\hassan\\Desktop\\retail_dataset.csv";
+        String fileName = "retail_dataset.csv";
         aprioriAlgorithm.test(reader.ReadTransactionFromCsv(fileName), minimumSupport, minimumConfidence);
     }
 }
