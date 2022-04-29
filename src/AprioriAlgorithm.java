@@ -8,8 +8,6 @@ import java.util.List;
 
 public class AprioriAlgorithm {
     private List<Transaction> transactions;
-    private Map<List, Integer> itemSet;
-    private Map<List, Integer> lastItemSet = new HashMap<>();
     private int minimumSupport;
     private float minimumConfidence;
 
@@ -35,9 +33,8 @@ public class AprioriAlgorithm {
     //Extract elements from file and count them.
     public Map<List, Integer> countElements() {
         Map<List, Integer> items = new HashMap<List, Integer>();
-
-        for (int i = 0; i < transactions.size(); i++) {
-            for (String item : transactions.get(i).getItems()) {
+        for (Transaction transaction : transactions) {
+            for (String item : transaction.getItems()) {
                 List<String> temp = new ArrayList<>();
                 temp.add(item);
                 Integer j = items.get(temp);
@@ -55,8 +52,8 @@ public class AprioriAlgorithm {
     //Take List of items and get the number of occurence they happen together.
     public int getElementsCount(List elements) {
         int counter = 0;
-        for (int i = 0; i < transactions.size(); i++) {
-            if (transactions.get(i).items.containsAll(elements))
+        for (Transaction transaction : transactions) {
+            if (transaction.items.containsAll(elements))
                 counter++;
         }
         return counter;
@@ -65,11 +62,11 @@ public class AprioriAlgorithm {
     //Take Two Lists and merge them in one list without duplication
     public List<List<String>> mergeLists(List<String> firstList, List<String> secondList) {
         List<List<String>> result = new ArrayList<>();
-        for (int i = 0; i < secondList.size(); i++) {                       //loop in secondList
-            int index = firstList.indexOf(secondList.get(i));               //search for secondList item in firstList
+        for (String s : secondList) {                       //loop in secondList
+            int index = firstList.indexOf(s);               //search for secondList item in firstList
             if (index == -1) {                                              //if this element not found in firstList
                 List<String> tempResult = new ArrayList<>(firstList);       //create tempResult and store firstList in it
-                tempResult.add(secondList.get(i));                          //then add secondList item to it
+                tempResult.add(s);                          //then add secondList item to it
                 Collections.sort(tempResult);                               //then merge it to can check if it exists in result list or not
                 if (!result.containsAll(tempResult))                        //if it's not found add it
                     result.add(tempResult);
@@ -87,8 +84,7 @@ public class AprioriAlgorithm {
                 List<String> firstList = keyList.get(i);                                //Extract List
                 List<String> secondList = keyList.get(j);                               //Extract another List
                 List<List<String>> mergedLists = mergeLists(firstList, secondList);     //Merge them in a list of lists
-                for (int k = 0; k < mergedLists.size(); k++) {                          //then loop in mergedLists and store them in result map if they are not exists.
-                    List<String> mergedList = mergedLists.get(k);
+                for (List<String> mergedList : mergedLists) {                          //then loop in mergedLists and store them in result map if they are not exists.
                     if (!result.entrySet().containsAll(mergedList))
                         result.put(mergedList, getElementsCount(mergedList));
                 }
@@ -98,15 +94,12 @@ public class AprioriAlgorithm {
     }
     //calculate confidence by dividing occurence of union over the occurence of first list
     public float calculateConfidence(int unionCount, int itemCount) {
-        float result = (float) unionCount / itemCount;
-        return result;
+        return (float) unionCount / itemCount;
     }
 
     //check if the confidence is valid related to minimum confidence or not
     public boolean validConfidence(float confidence) {
-        if (confidence < minimumConfidence)
-            return false;
-        return true;
+        return !(confidence < minimumConfidence);
     }
 
     //print assosiactions and with list1 count, union of lists and confidence of them.
@@ -120,18 +113,18 @@ public class AprioriAlgorithm {
         int allCount = 0;
         float confidence = 0;
         for (int i = 0; i < subsets.size(); i++) {                                  //loop in subsets by two loops to compare each subset with another one.
-            for (int j = 0; j < subsets.size(); j++) {
-                if (Collections.disjoint(subsets.get(i), subsets.get(j))) {         //if the two subsets doesn't have any common elements
+            for (List<String> subset : subsets) {
+                if (Collections.disjoint(subsets.get(i), subset)) {         //if the two subsets doesn't have any common elements
                     List<String> temp = new ArrayList<>();
                     temp.addAll(subsets.get(i));                                    //add both of them in one list
-                    temp.addAll(subsets.get(j));
+                    temp.addAll(subset);
                     if (temp.size() == listSize) {                                  //and if the merged list contains all elements in the given list
                         Collections.sort(temp);
                         subsetICount = getElementsCount(subsets.get(i));            //then get count of first subset
                         allCount = getElementsCount(temp);                          //and get count of their union
                         confidence = calculateConfidence(allCount, subsetICount);   //then calculate their confidence
                         if (validConfidence(confidence))                            //if the calculated confidence is valid
-                            printAssociations(subsets.get(i), subsets.get(j), subsetICount, allCount, confidence);      //print this association
+                            printAssociations(subsets.get(i), subset, subsetICount, allCount, confidence);      //print this association
                     }
 
                 }
@@ -157,9 +150,8 @@ public class AprioriAlgorithm {
     //loop on final map elements to generate their subsets and associations.
     public void getAssociationRules(Map<List, Integer> items) {
         List<List> keyList = new ArrayList<List>(items.keySet());
-        for (int i = 0; i < keyList.size(); i++) {
-            List<String> list = keyList.get(i);
-            generateAssociations(getSubsets(list), keyList.get(i).size());
+        for (List<String> list : keyList) {
+            generateAssociations(getSubsets(list), list.size());
         }
     }
 
@@ -169,11 +161,11 @@ public class AprioriAlgorithm {
         setTransactions(transactions);
         setMinimumConfidence(minimumConfidence);
         setMinimumSupport(minimumSupport);
-        itemSet = countElements();  //fill itemSet with list of elements and their counts.
+        Map<List, Integer> itemSet = countElements();  //fill itemSet with list of elements and their counts.
         System.out.println("********************************* \n" + "          Candidate 1 \n"
                 + "********************************* \n" + itemSet);
         removeLessThanMinimumSupport(itemSet);  //then remove elements which have counts less than minimum support.
-        lastItemSet = Map.copyOf(itemSet);     //this is another itemSet saves the last version of itemSet.
+        Map<List, Integer> lastItemSet = Map.copyOf(itemSet);     //this is another itemSet saves the last version of itemSet.
         System.out.println("\nItems after Removes Depends on Minimum Support: \n"
                 + "************************************************** \n" + itemSet);
         while (true) {

@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/20180088_DataMiningAss1.iml" filepath="$PROJECT_DIR$/20180088_DataMiningAss1.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Apriori_Algorithm.iml" filepath="$PROJECT_DIR$/Apriori_Algorithm.iml" />
     </modules>
   </component>
 </project>
