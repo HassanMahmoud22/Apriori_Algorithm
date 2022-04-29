@@ -1,8 +1,3 @@
-/*
-    Hassan Mahmoud Hassan
-    20180088
-    Group S2
- */
 import java.util.*;
 import java.util.List;
 
